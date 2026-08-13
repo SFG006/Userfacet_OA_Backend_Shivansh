@@ -230,7 +230,7 @@ from app.schemas import AlternateEndingRequest, AlternateEndingResponse
 
 
 @router.post(
-    "/alternate-ending/{book_id}",
+    "/alternate_ending/{book_id}",
     response_model=AlternateEndingResponse,
     summary="'What If' Alternate Ending",
     description=
