@@ -120,7 +120,7 @@ Interactive documentation interfaces auto-generate upon successful server initia
 2. Execute `POST /auth/register` to provision an administrative account with the `LIBRARIAN` role.
 3. Authenticate via the native **Authorize** component using your credentials.
 4. Test the ingestion pipeline via `POST /books/` using a title and ISBN string to trigger auto enrichment.
-5. Probe advanced endpoints including `POST /ai/debate/{book_id}`, `POST /ai/alternate-ending/{book_id}`, or review submission pipelines.
+5. Probe advanced endpoints including `POST /ai/debate/{book_id}`, `POST /ai/alternate_ending/{book_id}`, or review submission pipelines.
 
 ---
 
