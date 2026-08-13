@@ -1,16 +1,20 @@
 # Digital Library Management System
 
-An enterprise grade, fully asynchronous E Library backend API built with **FastAPI**. This system moves beyond standard CRUD operations by integrating advanced Large Language Model (LLM) capabilities, external media fetching, intelligent caching, and strict Role Based Access Control (RBAC).
+An enterprise grade, fully asynchronous E Library backend API built with **FastAPI**. This system moves beyond standard CRUD operations by integrating advanced Large Language Model (LLM) capabilities, external media fetching, intelligent caching, strict Role Based Access Control (RBAC), and probabilistic machine learning pipelines.
 
-![img.png](img.png)
+![img_1.png](img_1.png)
+
 ## Key Features
 
-* **AI Auto Enrichment:** Add a book using just the Title and ISBN. The system automatically queries an LLM to deduce the author, genre, and description, seamlessly saving the enriched data to the local database.
+* **AI Auto-Enrichment:** Add a book using just the Title and ISBN. The system automatically queries an LLM to deduce the author, genre, and description, seamlessly saving the enriched data to the local database.
 * **Semantic Search (Ask the AI Librarian):** Users can search the catalog using natural language (e.g., *"I want a fast paced sci fi book about space politics"*). The LLM processes the catalog and returns context aware matches.
-* **Smart Recommendations Engine:** Analyzes a user's specific SQL borrowing history and cross references it with current active inventory to generate personalized reading suggestions.
+* **Smart Recommendations Engine:** Analyzes a user's specific SQL borrowing history and cross-references it with current active inventory to generate personalized reading suggestions.
+* **Virtual "Debate the Author" Mode:** Users can submit a critique or thesis on any book. The LLM adopts the persona of the author in the first person to defend its creative choices in a real time intellectual debate.
+* **Ensemble Learning Spoiler Guard:** Reviews are passed through a two-layer classification pipeline (combining fast rule based heuristics with probabilistic LLM analysis) to automatically detect and flag plot spoilers before saving.
+* **"What If" Alternate Ending Sandbox:** A creative generative sandbox allowing users to submit counterfactual plot alterations and simulate narrative divergences in the stylistic voice of the author.
 * **OpenLibrary API Integration:** Automatically fetches high resolution book covers and purchase links during book creation, providing rich media for frontend clients.
 * **Intelligent Caching:** Expensive external AI calls (like generating book summaries) are cached locally in the database, drastically reducing latency and conserving API quota on subsequent requests.
-* **Enterprise Security:** Comprehensive JWT (JSON Web Token) authentication with strict RBAC ensuring secure separation between `MEMBER` and `LIBRARIAN` privileges.
+* **Enterprise Security & Integrity:** Comprehensive JWT authentication, strict RBAC (`MEMBER` vs `LIBRARIAN`), and relational integrity checks that protect against orphaned records during catalog deletions.
 * **Real Time Analytics:** Highly optimized SQL aggregations provide librarians with instant metrics on catalog size, user demographics, active loans, and popular titles.
 
 ---
@@ -21,7 +25,7 @@ An enterprise grade, fully asynchronous E Library backend API built with **FastA
 * **Database:** SQLite (via `aiosqlite` for non_blocking I/O)
 * **ORM:** SQLAlchemy 2.0 (Asynchronous)
 * **Data Validation:** Pydantic v2
-* **Security:** Passlib (bcrypt), python jose (JWT)
+* **Security:** Passlib (bcrypt), python-jose (JWT)
 * **External Integrations:** Userfacet AI API (LLM Gateway), OpenLibrary API, HTTPX
 
 ---
@@ -88,14 +92,14 @@ Once the server is running, FastAPI automatically generates interactive document
 2. Use `POST /auth/register` to create a `LIBRARIAN` account.
 3. Click the **Authorize** button at the top right and log in.
 4. Use `POST /books/` with just a Title and ISBN to watch the AI and OpenLibrary integrations auto enrich the database.
-5. Test the `GET /ai/search` endpoint using natural language.
+5. Test advanced features like `POST /ai/debate/{book_id}`, `POST /ai/alternate-ending/{book_id}`, or `POST /books/{book_id}/reviews`.
 
 ---
 
 ## Project Structure
 
 ```text
-e-library-management/
+Userfacet_OA_Backend_Shivansh/
 ├── app/
 │   ├── routers/          # Modular API endpoints (auth, books, borrow, ai, analytics)
 │   ├── main.py           # FastAPI application instance & lifespan events

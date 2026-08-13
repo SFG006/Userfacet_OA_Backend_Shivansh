@@ -3,9 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
 from app.models import Book, AISummaryCache, BorrowRecord, User
-from app.schemas import AISummaryResponse, RecommendationResponse, AISearchResponse
+from app.schemas import AISummaryResponse, RecommendationResponse, AISearchResponse, DebateRequest, DebateResponse
 from app.security import get_current_user
 from app.ai_service import ai_service
+
 
 # Initialize the router with a specific prefix and Swagger UI tag
 router = APIRouter(prefix="/ai", tags=["AI Powered Features"])
@@ -179,3 +180,93 @@ async def ask_ai_librarian(
     # 2. Pass the user's intent and the full catalog to the AI Service for semantic matching
     search_results = await ai_service.semantic_search(query, catalog)
     return {"query": query, "results": search_results}
+
+
+@router.post(
+    "/debate/{book_id}",
+    response_model=DebateResponse,
+    summary="Virtual 'Debate the Author' Mode",
+    description=
+    """
+    **Interactive Prompt Engineering!** 
+    Submit a thesis, argument, or critique about a specific book.
+    The AI will adopt the persona of the book's author,
+    reference the book's context, and debate you in real time.
+    """
+)
+async def debate_the_author(
+        book_id: int,
+        request: DebateRequest,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Interactive endpoint where the LLM defends the book from user critiques."""
+
+    # 1. Fetch the requested book to get the author and description context
+    result = await db.execute(select(Book).where(Book.id == book_id))
+    book = result.scalars().first()
+
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    # 2. Pass the book data and the user's argument to the AI Service
+    author_response = await ai_service.debate_author(
+        title=book.title,
+        author=book.author,
+        description=book.description,
+        user_argument=request.argument
+    )
+
+    return {
+        "book_id": book.id,
+        "title": book.title,
+        "author": book.author,
+        "user_argument": request.argument,
+        "author_response": author_response
+    }
+
+
+from app.schemas import AlternateEndingRequest, AlternateEndingResponse
+
+
+@router.post(
+    "/alternate-ending/{book_id}",
+    response_model=AlternateEndingResponse,
+    summary="'What If' Alternate Ending",
+    description=
+    """
+    **Creative Generative AI Sandbox!** 
+    Submit a counterfactual plot alteration (e.g., 'What if the protagonist made the opposite choice?') for any fiction book. 
+    The LLM simulates the narrative divergence in the stylistic voice of the author.
+    """
+)
+async def generate_alternate_ending(
+        book_id: int,
+        request: AlternateEndingRequest,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """Simulates narrative counterfactuals for fiction titles."""
+
+    # 1. Fetch the book context
+    result = await db.execute(select(Book).where(Book.id == book_id))
+    book = result.scalars().first()
+
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    # 2. Invoke AI Service
+    alternate_ending = await ai_service.generate_alternate_ending(
+        title=book.title,
+        author=book.author,
+        description=book.description,
+        counterfactual_prompt=request.counterfactual_prompt
+    )
+
+    return {
+        "book_id": book.id,
+        "title": book.title,
+        "author": book.author,
+        "counterfactual_prompt": request.counterfactual_prompt,
+        "alternate_ending": alternate_ending
+    }

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
 from app.models import RoleEnum
@@ -118,3 +118,44 @@ class AISearchResult(BaseModel):
 class AISearchResponse(BaseModel):
     query: str
     results: List[AISearchResult]
+
+# debate schema
+class DebateRequest(BaseModel):
+    argument: str
+
+class DebateResponse(BaseModel):
+    book_id: int
+    title: str
+    author: str
+    user_argument: str
+    author_response: str
+
+
+# reviews schema
+class ReviewCreate(BaseModel):
+    content: str
+    rating: int = Field(ge=1, le=5, description="Rating from 1 to 5")
+
+class ReviewResponse(BaseModel):
+    id: int
+    book_id: int
+    user_id: int
+    content: str
+    rating: int
+    contains_spoilers: bool
+    spoiler_probability: float
+
+    class Config:
+        from_attributes = True
+
+        
+#AlternateEnding schema
+class AlternateEndingRequest(BaseModel):
+    counterfactual_prompt: str = Field(..., description="The 'what if' scenario or plot alteration.")
+
+class AlternateEndingResponse(BaseModel):
+    book_id: int
+    title: str
+    author: str
+    counterfactual_prompt: str
+    alternate_ending: str

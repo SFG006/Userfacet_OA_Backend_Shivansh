@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Optional
 from app.database import get_db
-from app.models import Book, RoleEnum
+from app.models import Book, RoleEnum, BorrowRecord
 from app.schemas import BookCreate, BookResponse
 from app.security import require_role, get_current_user
 from app.ai_service import ai_service
+from app.models import Review ,User
+from app.schemas import ReviewCreate, ReviewResponse
 import httpx
 
 # Initialize the router with a specific prefix and Swagger UI tag
@@ -166,3 +168,98 @@ async def list_books(
     result = await db.execute(query)
 
     return result.scalars().all()
+
+
+@router.post(
+    "/{book_id}/reviews",
+    response_model=ReviewResponse,
+    summary="Submit Review (Ensemble Spoiler Guard)",
+    description=
+    """
+    Submits a review and passes the text through a 2 layer ML classification pipeline
+    to automatically detect and flag plot spoilers.
+    """
+)
+async def add_review(
+        book_id: int,
+        review_in: ReviewCreate,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Evaluates review text for spoilers before saving it to the database.
+    """
+    # 1. Fetch the book to get context for the AI
+    result = await db.execute(select(Book).where(Book.id == book_id))
+    book = result.scalars().first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    # 2. Run the text through the AI Service Ensemble Pipeline
+    spoiler_analysis = await ai_service.detect_spoiler(title=book.title, review_text=review_in.content)
+
+    # 3. Create the review record with the calculated probabilities
+    new_review = Review(
+        book_id=book.id,
+        user_id=current_user.id,
+        content=review_in.content,
+        rating=review_in.rating,
+        contains_spoilers=spoiler_analysis["is_spoiler"],
+        spoiler_probability=spoiler_analysis["probability"]
+    )
+
+    db.add(new_review)
+    await db.commit()
+    await db.refresh(new_review)
+
+    return new_review
+
+
+@router.delete(
+    "/{book_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a Book",
+    description=
+    """
+    Removes a book from the library catalog. 
+
+    **Enterprise Safeguard:** This endpoint actively checks the `BorrowRecord` table.
+    If any user currently has this book checked out, 
+    the deletion is blocked to protect database relational integrity.
+    """
+)
+async def delete_book(
+        book_id: int,
+        db: AsyncSession = Depends(get_db),
+        user=Depends(require_role(RoleEnum.LIBRARIAN))
+):
+    """
+    Safely deletes a book from the catalog, ensuring no active loans are orphaned.
+    Strictly protected by RBAC (Librarians only).
+    """
+    # 1. Verify the book actually exists
+    result = await db.execute(select(Book).where(Book.id == book_id))
+    book = result.scalars().first()
+
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    # 2. Referential Integrity Check: Are there active, unreturned borrows?
+    active_borrows_query = select(BorrowRecord).where(
+        BorrowRecord.book_id == book_id,
+        BorrowRecord.is_returned == False
+    )
+    active_borrows_result = await db.execute(active_borrows_query)
+
+    if active_borrows_result.scalars().first():
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete book: Copies are currently checked out by users."
+        )
+
+    # 3. Safe Deletion
+    await db.delete(book)
+    await db.commit()
+
+    # 204 No Content responses should not return a body
+    return None

@@ -191,4 +191,142 @@ class AIService:
                 return []
 
 
+    async def debate_author(self, title: str, author: str, description: str, user_argument: str) -> str:
+        """Instructs the LLM to adopt the persona of the book's author and debate the user."""
+        prompt = f"""
+        You are {author}, the author of the book '{title}'. 
+        Here is a brief description of your work: {description}
+
+        A reader has just presented the following critique or argument regarding your book:
+        "{user_argument}"
+
+        Respond directly to the reader in the first person ("I"). 
+        Defend your creative choices, counter their argument, or explore their thesis from your unique perspective. 
+        Keep the response engaging, intellectual, slightly defensive but polite, and strictly under 150 words.
+        """
+
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a famous author engaging in a lively, intellectual debate with a critical reader."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 250,
+            "temperature": 0.8  # Higher temperature for more creative/passionate responses
+        }
+
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            res = await client.post(f"{self.base_url}/v1/chat/completions", headers=self.headers, json=payload)
+
+            # Graceful fallback if the API fails
+            if res.status_code != 200:
+                return "I am currently unavailable for debate. Please write to my publisher."
+
+            data = res.json()
+            # This returns standard text, no JSON parsing required
+            return data["choices"][0]["message"]["content"]
+
+
+    async def detect_spoiler(self, title: str, review_text: str) -> dict:
+        """
+        Ensemble Learning Simulation: Combines a rule based heuristic with an LLM classifier
+        to calculate the probability that a text contains plot spoilers.
+        """
+        # Layer 1: Rule Based Heuristic (Simulated feature extraction)
+        suspicious_keywords = ["dies", "ending", "turns out", "killer", "plot twist", "finale", "secret", "revealed",
+                               "ghost"]
+        keyword_hits = sum(1 for word in suspicious_keywords if word in review_text.lower())
+        base_probability = min(keyword_hits * 0.15, 0.45)  # Max 45% probability from heuristics alone
+
+        # Layer 2: LLM Zero Shot Classifier
+        prompt = f"""
+        Act as a text classification model. Analyze this book review for '{title}'.
+        Review: "{review_text}"
+
+        Calculate the probability (between 0.0 and 1.0) that this review reveals critical plot spoilers, twists, or endings.
+        Output ONLY valid JSON matching this schema:
+        {{
+            "llm_probability": 0.85,
+            "reason": "1 sentence explanation of why it is or isn't a spoiler."
+        }}
+        """
+
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": "You are a data classification algorithm. Respond strictly in JSON."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 150,
+            "temperature": 0.1  # Low temperature for deterministic classification
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                res = await client.post(f"{self.base_url}/v1/chat/completions", headers=self.headers, json=payload)
+
+                if res.status_code == 200:
+                    data = res.json()
+                    raw_content = data["choices"][0]["message"]["content"]
+                    clean_json = raw_content.replace("```json", "").replace("```", "").strip()
+                    llm_result = json.loads(clean_json)
+
+                    # Ensemble Calculation: Weight the LLM higher (70%) and heuristics lower (30%)
+                    final_probability = (llm_result.get("llm_probability", 0.0) * 0.7) + (base_probability * 0.3)
+
+                    return {
+                        "is_spoiler": final_probability > 0.75,  # Threshold for flagging
+                        "probability": round(final_probability, 2),
+                        "reason": llm_result.get("reason", "Analyzed via ensemble pipeline.")
+                    }
+        except Exception:
+            pass
+
+        # Fallback if AI fails: rely entirely on the heuristic layer
+        return {
+            "is_spoiler": base_probability > 0.4,
+            "probability": round(base_probability, 2),
+            "reason": "Fallback to heuristic rules."
+        }
+
+    async def generate_alternate_ending(self, title: str, author: str, description: str,
+                                        counterfactual_prompt: str) -> str:
+        """Simulates an alternate narrative ending based on a user provided counterfactual scenario."""
+        prompt = f"""
+        You are {author}, the author of the book '{title}'.
+        Here is the core premise and description of your work: {description}
+
+        A reader has proposed a counterfactual 'What If' scenario for this story:
+        "{counterfactual_prompt}"
+
+        Rewrite or simulate how the climax and ending of the story would diverge based on this specific change. 
+        Maintain your stylistic voice, narrative tone, and literary depth. Keep the response engaging, dramatic, and strictly under 200 words.
+        """
+
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are a master storyteller and novelist simulating creative narrative counterfactuals."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 300,
+            "temperature": 0.85  # High temperature for maximum narrative creativity
+        }
+
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            res = await client.post(f"{self.base_url}/v1/chat/completions", headers=self.headers, json=payload)
+
+            if res.status_code != 200:
+                return "The narrative timeline has collapsed. Unable to simulate alternate ending at this time."
+
+            data = res.json()
+            return data["choices"][0]["message"]["content"]
+
+
 ai_service = AIService()

@@ -1,6 +1,6 @@
 import enum
 from datetime import datetime
-from sqlalchemy import String, Integer, ForeignKey, DateTime, Enum, Text, Boolean, Column
+from sqlalchemy import String, Integer, ForeignKey, DateTime, Enum, Text, Boolean, Column, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
@@ -105,3 +105,27 @@ class AISummaryCache(Base):
 
     # Links back to the parent Book model
     book = relationship("Book", back_populates="summary_cache")
+
+
+# Add Float to your existing sqlalchemy imports:
+# from sqlalchemy import String, Integer, ForeignKey, DateTime, Enum, Text, Boolean, Column, Float
+
+class Review(Base):
+    """
+    Stores user generated book reviews.
+    Includes ML driven anomaly detection flags to protect readers from plot spoilers.
+    """
+    __tablename__ = "reviews"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    rating: Mapped[int] = mapped_column(Integer, default=5)
+
+    # Ensemble Learning Outputs
+    contains_spoilers: Mapped[bool] = mapped_column(Boolean, default=False)
+    spoiler_probability: Mapped[float] = mapped_column(Float, default=0.0)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
