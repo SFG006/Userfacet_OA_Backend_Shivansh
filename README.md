@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/LLM-GPT--4o--mini-412991?style=for-the-badge&logo=openai&logoColor=white" alt="AI Gateway">
   <img src="https://img.shields.io/badge/LICENSE-MIT-darkred?style=for-the-badge" alt="License">
 </p>
-**Enterprise Grade Asynchronous Backend API** built with FastAPI, integrating Large Language Model (LLM) intelligence, dynamic media orchestration, probabilistic machine learning pipelines, and strict Role Based Access Control (RBAC).
+Enterprise Grade Asynchronous Backend API built with FastAPI, integrating Large Language Model (LLM) intelligence, dynamic media orchestration, probabilistic machine learning pipelines, and strict Role Based Access Control (RBAC).
 
 ![img_1.png](img_1.png)
 
