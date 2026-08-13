@@ -1,11 +1,11 @@
 # Digital Library Management System
 <p align="left">
-  <img src="https://img.shields.io/badge/PYTHON-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/FASTAPI-Framework-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/SQLALCHEMY-2.0-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy">
-  <img src="https://img.shields.io/badge/PYDANTIC-v2-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
-  <img src="https://img.shields.io/badge/LLM-GPT--4o--mini-412991?style=for-the-badge&logo=openai&logoColor=white" alt="AI Gateway">
-  <img src="https://img.shields.io/badge/LICENSE-MIT-darkred?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/PYTHON-3.10%2B-FFEA00?style=for-the-badge&logo=python&logoColor=black" alt="Python">
+  <img src="https://img.shields.io/badge/FASTAPI-FRAMEWORK-2E7D32?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/SQLALCHEMY-2.0-FF9100?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy">
+  <img src="https://img.shields.io/badge/PYDANTIC-V2-FF007F?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic">
+  <img src="https://img.shields.io/badge/LLM-GPT--4O--MINI-FF1744?style=for-the-badge&logo=openai&logoColor=white" alt="AI Gateway">
+  <img src="https://img.shields.io/badge/LICENSE-MIT-7C4DFF?style=for-the-badge&logoColor=white" alt="License">
 </p>
 Enterprise Grade Asynchronous Backend API built with FastAPI, integrating Large Language Model (LLM) intelligence, dynamic media orchestration, probabilistic machine learning pipelines, and strict Role Based Access Control (RBAC).
 
