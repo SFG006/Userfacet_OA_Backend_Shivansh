@@ -2,7 +2,7 @@
 
 An enterprise grade, fully asynchronous E Library backend API built with **FastAPI**. This system moves beyond standard CRUD operations by integrating advanced Large Language Model (LLM) capabilities, external media fetching, intelligent caching, strict Role Based Access Control (RBAC), and probabilistic machine learning pipelines.
 
-![img.png](img.png)
+![img_1.png](img_1.png)
 
 ## Key Features
 
