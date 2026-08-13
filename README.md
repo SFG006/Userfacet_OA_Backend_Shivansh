@@ -147,5 +147,3 @@ Userfacet_OA_Backend_Shivansh/
 <div align="center">
   <sub><i>"A library preserves the thoughts of the past. Intelligent architecture allows them to think for the future."</i></sub>
 </div>
-
-**Author:** Shivansh Gupta
