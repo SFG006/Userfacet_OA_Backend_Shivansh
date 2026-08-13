@@ -61,6 +61,14 @@ The FastAPI server exposes the following data streams and management endpoints:
 | `/ai/alternate_ending/{book_id}` | `POST` | Generates a stylistic narrative divergence based on a user submitted counterfactual "What If" prompt.             |
 | `/analytics/`                    | `GET` | Returns real time, platform wide metrics on catalog size, user demographics, and loan activity (Librarians only). |
 
+## Assumptions & Technical Notes
+
+* **Environment:** The host machine has Python 3.10 or higher and `pip` installed.
+* **Database:** SQLite (via `aiosqlite`) is used for local persistence, requiring no external database server setup (such as PostgreSQL or MySQL).
+* **AI Gateway:** An active Userfacet AI API token is provided via the environment variables to support LLM features like summarization, semantic search, and the alternate ending sandbox.
+* **Execution Context:** The backend is configured to run locally on `http://127.0.0.1:8000` with auto reload enabled for development.
+
+
 ## Local Setup & Installation
 
 ### 1. Clone the Repository
