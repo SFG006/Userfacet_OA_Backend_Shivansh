@@ -9,10 +9,14 @@
 </p>
 Enterprise Grade Asynchronous Backend API built with FastAPI, integrating Large Language Model (LLM) intelligence, dynamic media orchestration, probabilistic machine learning pipelines, and strict Role Based Access Control (RBAC).
 
+###  Backend API  
+[![Live API](https://img.shields.io/badge/DIGITAL_LIBRARY_API-OPEN-2563EB?style=for-the-badge&logo=fastapi&logoColor=white)](https://userfacet-oa-backend-shivansh.onrender.com/docs)
+
 ![img_1.png](img_1.png)
 
 
 ---
+
 
 ## System Overview
 
